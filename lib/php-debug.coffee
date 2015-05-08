@@ -8,7 +8,7 @@ module.exports = PhpDebug =
 
   activate: (state) ->
     @phpDebugView = new PhpDebugView(state.phpDebugViewState)
-    @modalPanel = atom.workspace.addModalPanel(item: @phpDebugView.getElement(), visible: false)
+    @modalPanel = atom.workspace.addBottomPanel(item: @phpDebugView.getElement(), visible: false)
 
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable

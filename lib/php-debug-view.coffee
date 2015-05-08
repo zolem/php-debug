@@ -4,12 +4,11 @@ class PhpDebugView
     # Create root element
     @element = document.createElement('div')
     @element.classList.add('php-debug')
-
-    # Create message element
-    message = document.createElement('div')
-    message.textContent = "The PhpDebug package is Alive! It's ALIVE!"
-    message.classList.add('message')
-    @element.appendChild(message)
+    # Create title element
+    title = document.createElement('h2')
+    title.textContent = "The PhpDebug package is Alive! It's ALIVE!"
+    title.classList.add('title')
+    @element.appendChild(title)
 
   # Returns an object that can be retrieved when package is activated
   serialize: ->
