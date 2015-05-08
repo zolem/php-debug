@@ -1,0 +1,22 @@
+# See https://atom.io/docs/latest/hacking-atom-package-word-count#menus for more details
+'context-menu':
+  'atom-text-editor': [
+    {
+      'label': 'Toggle php-debug'
+      'command': 'php-debug:toggle'
+    }
+  ]
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'php-debug'
+      'submenu': [
+        {
+          'label': 'Toggle'
+          'command': 'php-debug:toggle'
+        }
+      ]
+    ]
+  }
+]
