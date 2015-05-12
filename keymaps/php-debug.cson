@@ -10,3 +10,4 @@
 'atom-workspace':
   'ctrl-alt-o': 'php-debug:toggle'
   'f5': 'php-debug:run'
+  'f4': 'php-debug:stepInto'

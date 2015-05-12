@@ -1,52 +1,41 @@
-PhpDebugView = require './php-debug-view'
 XdebugClient = require './xdebug-client'
+fs = require "fs"
 
 {CompositeDisposable} = require 'atom'
 
 module.exports = PhpDebug =
-  phpDebugView: null
-  panel: null
   subscriptions: null
+  settings: null
 
   activate: (state) ->
-    @phpDebugView = new PhpDebugView(state.phpDebugViewState)
-    @panel = atom.workspace.addBottomPanel(item: @phpDebugView.getElement(), visible: false)
+    file = atom.project.getPaths()[0] + "\\settings.json"
+
+    @settings =
+      if fs.existsSync file
+      then JSON.parse fs.readFileSync file
+      else {"url":null, "remote":null, "local":null, "port": 9000}
+
+    @xdebugClient = new XdebugClient(@settings)
 
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
 
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'php-debug:toggle': => @toggle()
-    @subscriptions.add atom.commands.add 'atom-workspace', 'php-debug:run': => @run()
+    @subscriptions.add atom.commands.add 'atom-workspace', 'php-debug:run': => @sendCommand("run")
+    @subscriptions.add atom.commands.add 'atom-workspace', 'php-debug:stepInto': => @sendCommand("step_into")
 
   deactivate: ->
-    @panel.destroy()
+    @xdebugClient.panel.destroy()
     @subscriptions.dispose()
-    @phpDebugView.destroy()
     @xdebugClient.destroy()
-
-  serialize: ->
-    phpDebugViewState: @phpDebugView.serialize()
 
   toggle: ->
 
-    if @panel.isVisible()
-      @panel.hide()
+    if @xdebugClient.panel.isVisible()
       @xdebugClient.stop()
-
     else
-      @panel.show()
-      file = atom.project.getPaths()[0] + "\\settings.json"
-      console.log(file)
-      fs.readFile file, (err, data) =>
-        if err
-          err
-        else
-          settings = JSON.parse data
-        @xdebugClient = new XdebugClient(settings)
-        @xdebugClient.start()
-  run:->
-    @xdebugClient.sendCommand("run")
+      @xdebugClient.start()
 
-  stepInto:->
-    @xdebugClient.sendCommand("step_into")
+  sendCommand: (command) ->
+    @xdebugClient.sendCommand(command)
