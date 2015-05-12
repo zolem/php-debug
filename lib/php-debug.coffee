@@ -1,33 +1,52 @@
 PhpDebugView = require './php-debug-view'
+XdebugClient = require './xdebug-client'
+
 {CompositeDisposable} = require 'atom'
 
 module.exports = PhpDebug =
   phpDebugView: null
-  modalPanel: null
+  panel: null
   subscriptions: null
 
   activate: (state) ->
     @phpDebugView = new PhpDebugView(state.phpDebugViewState)
-    @modalPanel = atom.workspace.addBottomPanel(item: @phpDebugView.getElement(), visible: false)
+    @panel = atom.workspace.addBottomPanel(item: @phpDebugView.getElement(), visible: false)
 
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
 
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'php-debug:toggle': => @toggle()
+    @subscriptions.add atom.commands.add 'atom-workspace', 'php-debug:run': => @run()
 
   deactivate: ->
-    @modalPanel.destroy()
+    @panel.destroy()
     @subscriptions.dispose()
     @phpDebugView.destroy()
+    @xdebugClient.destroy()
 
   serialize: ->
     phpDebugViewState: @phpDebugView.serialize()
 
   toggle: ->
-    console.log 'PhpDebug was toggled!'
 
-    if @modalPanel.isVisible()
-      @modalPanel.hide()
+    if @panel.isVisible()
+      @panel.hide()
+      @xdebugClient.stop()
+
     else
-      @modalPanel.show()
+      @panel.show()
+      file = atom.project.getPaths()[0] + "\\settings.json"
+      console.log(file)
+      fs.readFile file, (err, data) =>
+        if err
+          err
+        else
+          settings = JSON.parse data
+        @xdebugClient = new XdebugClient(settings)
+        @xdebugClient.start()
+  run:->
+    @xdebugClient.sendCommand("run")
+
+  stepInto:->
+    @xdebugClient.sendCommand("step_into")
